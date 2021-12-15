@@ -202,7 +202,7 @@ func main() {
 					return
 				}
 
-				fmt.Printf("%s %d %s\n", rawURL, resp.StatusCode, resp.Header.Get("Location"))
+				fmt.Printf("%s %d %d %s\n", rawURL, resp.StatusCode, resp.ContentLength, resp.Header.Get("Location"))
 				return
 			}
 
