@@ -37,6 +37,7 @@ func init() {
 			"  -M, --match <string>      Save responses that include <string> in the body",
 			"  -o, --output <dir>        Directory to save responses in (will be created)",
 			"  -s, --save-status <code>  Save responses with given status code (can be specified multiple times)",
+			"  -ex,--exclude-status <code>  Save responses with given status code (can be specified multiple times)",
 			"  -S, --save                Save all responses",
 			"  -x, --proxy <proxyURL>    Use the provided HTTP proxy",
 			"",
@@ -81,9 +82,13 @@ func main() {
 	flag.Var(&headers, "header", "")
 	flag.Var(&headers, "H", "")
 
-	var saveStatus saveStatusArgs
+	var saveStatus statusArgs
 	flag.Var(&saveStatus, "save-status", "")
 	flag.Var(&saveStatus, "s", "")
+
+	var excludeStatus statusArgs
+	flag.Var(&excludeStatus, "exclude-status", "")
+	flag.Var(&excludeStatus, "ex", "")
 
 	var proxy string
 	flag.StringVar(&proxy, "proxy", "", "")
@@ -168,7 +173,7 @@ func main() {
 				return
 			}
 
-			shouldSave := saveResponses || len(saveStatus) > 0 && saveStatus.Includes(resp.StatusCode)
+			shouldSave := saveResponses || len(saveStatus) > 0 && saveStatus.Includes(resp.StatusCode) && !excludeStatus.Includes(resp.StatusCode)
 
 			// If we've been asked to ignore HTML files then we should really do that.
 			// But why would you want to ignore HTML files? Sometimes you're looking at
@@ -193,7 +198,11 @@ func main() {
 			}
 
 			if !shouldSave {
-				fmt.Printf("%s %d\n", rawURL, resp.StatusCode)
+				if excludeStatus.Includes(resp.StatusCode) {
+					return
+				}
+
+				fmt.Printf("%s %d %s\n", rawURL, resp.StatusCode, resp.Header.Get("Location"))
 				return
 			}
 
@@ -308,19 +317,19 @@ func (h headerArgs) String() string {
 	return strings.Join(h, ", ")
 }
 
-type saveStatusArgs []int
+type statusArgs []int
 
-func (s *saveStatusArgs) Set(val string) error {
+func (s *statusArgs) Set(val string) error {
 	i, _ := strconv.Atoi(val)
 	*s = append(*s, i)
 	return nil
 }
 
-func (s saveStatusArgs) String() string {
+func (s statusArgs) String() string {
 	return "string"
 }
 
-func (s saveStatusArgs) Includes(search int) bool {
+func (s statusArgs) Includes(search int) bool {
 	for _, status := range s {
 		if status == search {
 			return true
