@@ -36,8 +36,8 @@ func init() {
 			"  -m, --method              HTTP method to use (default: GET, or POST if body is specified)",
 			"  -M, --match <string>      Save responses that include <string> in the body",
 			"  -o, --output <dir>        Directory to save responses in (will be created)",
-			"  -s, --save-status <code>  Save responses with given status code (can be specified multiple times)",
-			"  -ex,--exclude-status <code>  Save responses with given status code (can be specified multiple times)",
+			"  -s, --save-status <code>  Save responses with given status code (can be specified in comma separated format)",
+			"  -ex,--exclude-status <code>  Save responses with given status code (can be specified in comma separated format)",
 			"  -S, --save                Save all responses",
 			"  -x, --proxy <proxyURL>    Use the provided HTTP proxy",
 			"",
@@ -202,7 +202,7 @@ func main() {
 					return
 				}
 
-				fmt.Printf("%s %d %d %s\n", rawURL, resp.StatusCode, resp.ContentLength, resp.Header.Get("Location"))
+				fmt.Printf("%s,%s,%d,%d\n", rawURL, resp.Header.Get("Location"), resp.ContentLength, resp.StatusCode)
 				return
 			}
 
@@ -320,8 +320,13 @@ func (h headerArgs) String() string {
 type statusArgs []int
 
 func (s *statusArgs) Set(val string) error {
-	i, _ := strconv.Atoi(val)
-	*s = append(*s, i)
+	ary := strings.Split(val, ",")
+	for i := range ary {
+		if iVal, err := strconv.Atoi(ary[i]); err == nil {
+			*s = append(*s, iVal)
+		}
+	}
+
 	return nil
 }
 
