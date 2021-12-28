@@ -102,6 +102,8 @@ func main() {
 		prefix = "out"
 	}
 
+	stdoutFormatStr := "%s,%s,status: %d,size: %d,words: %d,lines: %d,type: %s\n"
+
 	// regex for determining if something is probably HTML. You might
 	// think that checking the content-type response header would be a better
 	// idea, and you might be right - but if there's one thing I've learnt
@@ -140,7 +142,7 @@ func main() {
 			req, err := http.NewRequest(method, rawURL, b)
 			if err != nil {
 				//fmt.Fprintf(os.Stderr, "failed to create request: %s\n", err)
-				fmt.Printf("%s,%s,status: %d,size: %d\n", rawURL, err, 0, 0)
+				fmt.Printf(stdoutFormatStr, rawURL, err, 0, 0, 0, 0, "error")
 				return
 			}
 
@@ -158,7 +160,7 @@ func main() {
 			resp, err := client.Do(req)
 			if err != nil {
 				//fmt.Fprintf(os.Stderr, "request failed: %s\n", err)
-				fmt.Printf("%s,%s,status: %d,size: %d\n", rawURL, err, 0, 0)
+				fmt.Printf(stdoutFormatStr, rawURL, err, 0, 0, 0, 0, "error")
 				return
 			}
 			defer resp.Body.Close()
@@ -168,7 +170,7 @@ func main() {
 			responseBody, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
 				//fmt.Fprintf(os.Stderr, "failed to read body: %s\n", err)
-				fmt.Printf("%s,%s,status: %d,size: %d\n", rawURL, err, 0, 0)
+				fmt.Printf(stdoutFormatStr, rawURL, err, 0, 0, 0, 0, "error")
 				return
 			}
 
@@ -205,7 +207,7 @@ func main() {
 			linesSize := len(strings.Split(string(responseBody), "\n"))
 
 			if outputDir == "" {
-				fmt.Printf("%s,%s,status: %d,size: %d,words: %d,lines: %d,type: %s\n", rawURL, resp.Header.Get("Location"), resp.StatusCode, resp.ContentLength, wordsSize, linesSize, resp.Header.Get("Content-Type"))
+				fmt.Printf(stdoutFormatStr, rawURL, resp.Header.Get("Location"), resp.StatusCode, resp.ContentLength, wordsSize, linesSize, resp.Header.Get("Content-Type"))
 				return
 			}
 
