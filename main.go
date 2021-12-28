@@ -200,8 +200,12 @@ func main() {
 				return
 			}
 
+			resp.ContentLength = int64(len(string(responseBody)))
+			wordsSize := len(strings.Split(string(responseBody), " "))
+			linesSize := len(strings.Split(string(responseBody), "\n"))
+
 			if outputDir == "" {
-				fmt.Printf("%s,%s,status: %d,size: %d\n", rawURL, resp.Header.Get("Location"), resp.StatusCode, resp.ContentLength)
+				fmt.Printf("%s,%s,status: %d,size: %d,words: %d,lines: %d,type: %s\n", rawURL, resp.Header.Get("Location"), resp.StatusCode, resp.ContentLength, wordsSize, linesSize, resp.Header.Get("Content-Type"))
 				return
 			}
 
